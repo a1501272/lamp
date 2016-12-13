@@ -4,7 +4,7 @@ class lamp {
 	 package { "php":}
 	 package { "mysql-server":}
 	 package { "mysql-client":}
-
+	 package { "php-mysql":}
 
 	 file { "/home/alex/public_html/index.php":
 		 content => template ("lamp/index.php"),
@@ -31,6 +31,21 @@ class lamp {
 		 notify => Service ["apache2"],
 
 	 }
+	file { "/var/www/html/index.php":
+		 content => template ("lamp/index.php"),
+		 ensure => "directory",
+
+	 }
+	
+	file { "/etc/skel/public_html":
+		 ensure => "directory",
+
+	 }
+
+	 file { "/etc/skel/public_html/index.php":
+		 content => template ("lamp/index.php"),
+
+	 }
 
 	 service { "apache2":
 		 ensure => "running",
@@ -46,6 +61,14 @@ class lamp {
 		 require => Package["mysql-server"],
 
 	 }
+#tämä tuottaa virheen		
+	exec { 'mysql-db':
+		command => "mysql -uroot -e \"create database puppet; grant all on puppet.* to puppet@localhost identified by 'Pa33w0rd12345';\"",
+		unless => 'mysqlshow puppet',
+		path => '/bin/:/usr/bin/:/sbin/:/usr/sbin/',
+		require => Service["mysql"],
+	}
+
 }
 
 
