@@ -1,4 +1,6 @@
 class lamp {
+	$mysqlpw = "Pa33w0rd@123@"
+
 	 package { "apache2":}
 	 package { "libapache2-mod-php":}
 	 package { "php":}
@@ -16,6 +18,7 @@ class lamp {
 		 ensure => "link",
 		 target => "../mods-available/userdir.conf",
 		 notify => Service ["apache2"],
+		 require => Package["apache2"],
 
 	 }
 
@@ -23,13 +26,13 @@ class lamp {
 		 ensure => "link",
 		 target => "../mods-available/userdir.load",
 		 notify => Service ["apache2"],
+		 require => Package["apache2"],
 
 	 }
 
 	 file { "/etc/apache2/mods-available/php7.0.conf":
 		 content => template ("lamp/php7.0.conf"),
 		 notify => Service ["apache2"],
-
 	 }
 	file { "/var/www/html/index.php":
 		 content => template ("lamp/index.php"),
@@ -54,23 +57,18 @@ class lamp {
 		 require => Package["apache2"],
 
 	 }
-	 service { "mysql":
-		 ensure => "running",
-		 enable => "true",
-		 provider => "systemd",
-		 require => Package["mysql-server"],
-
+	service { 'mysql':
+		 ensure => 'running',
+		 enable => 'true',
 	 }
-#tämä tuottaa virheen		
-	exec { 'mysql-db':
-		command => "mysql -uroot -e \"create database puppet; grant all on puppet.* to puppet@localhost identified by 'Pa33w0rd12345';\"",
-		unless => 'mysqlshow puppet',
-		path => '/bin/:/usr/bin/:/sbin/:/usr/sbin/',
+	 exec {'set-mysql-pw':
+		 command => "/usr/bin/mysqladmin -u root password $mysqlpw",
 		require => Service["mysql"],
-	}
+	 }	
+
+	
 
 }
-
 
 
 
