@@ -33,6 +33,8 @@ class lamp {
 	 file { "/etc/apache2/mods-available/php7.0.conf":
 		 content => template ("lamp/php7.0.conf"),
 		 notify => Service ["apache2"],
+		 require => Package["apache2"],
+
 	 }
 	file { "/var/www/html/index.php":
 		 content => template ("lamp/index.php"),
