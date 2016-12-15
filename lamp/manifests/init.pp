@@ -1,13 +1,18 @@
 class lamp {
-	$mysqlpw = "Pa33w0rd@123@"
+
+	Package { ensure => "installed"}
 
 	 package { "apache2":}
-	 package { "libapache2-mod-php":}
+	 package { "libapache2-mod-php":
+		require => Package ["apache2"] }
 	 package { "php":}
 	 package { "mysql-server":}
 	 package { "mysql-client":}
 	 package { "php-mysql":}
-
+	
+	file { "/home/alex/public_html":
+                 ensure => "directory",
+	}
 	 file { "/home/alex/public_html/index.php":
 		 content => template ("lamp/index.php"),
 
@@ -34,11 +39,11 @@ class lamp {
 		 content => template ("lamp/php7.0.conf"),
 		 notify => Service ["apache2"],
 		 require => Package["apache2"],
-
 	 }
 	file { "/var/www/html/index.php":
 		 content => template ("lamp/index.php"),
 		 ensure => "directory",
+		require => Package["apache2"],
 
 	 }
 	
@@ -59,16 +64,16 @@ class lamp {
 		 require => Package["apache2"],
 
 	 }
-	service { 'mysql':
-		 ensure => 'running',
-		 enable => 'true',
-	 }
-	 exec {'set-mysql-pw':
-		 command => "/usr/bin/mysqladmin -u root password $mysqlpw",
-		require => Service["mysql"],
-	 }	
-
-	
+	service { "mysql":
+		 ensure => "running",
+		 enable => "true",
+		 require => Package [ "mysql-server"],
+		 provider => "systemd",
+	 }	exec { "mysqlpasswd":
+		 command => "/usr/bin/mysqladmin -u root password M01kkamo1",
+		 notify => [Service["mysql"], Service["apache2"]],
+		 require => [Package["mysql-server"], Package["apache2"]],
+	}	
 
 }
 
